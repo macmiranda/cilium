@@ -801,13 +801,15 @@ func NewLegacyMetrics() *LegacyMetrics {
 			Help:      "Number of redirects installed for endpoints, labeled by protocol",
 		}, []string{LabelProtocolL7}),
 
-		ProxyPolicyL7Total: metric.NewCounterVec(metric.CounterOpts{
+		ProxyPolicyL7Total: metric.NewCounterVecWithLabels(metric.CounterOpts{
 			ConfigName: Namespace + "_policy_l7_total",
 
 			Namespace: Namespace,
 			Name:      "policy_l7_total",
 			Help:      "Number of total proxy requests handled",
-		}, []string{"rule"}),
+		}, metric.Labels{
+			metric.NewLabel("rule", "received", "forwarded", "denied", "parse_errors"),
+		}),
 
 		ProxyParseErrors: metric.NewCounter(metric.CounterOpts{
 			ConfigName: Namespace + "_policy_l7_parse_errors_total",
