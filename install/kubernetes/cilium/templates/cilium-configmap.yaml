@@ -76,6 +76,19 @@
 {{- else if (not (kindIs "invalid" .Values.cni.chainingTarget)) -}}
   {{- $cniChainingMode = "generic-veth" -}}
 {{- end -}}
+
+{{- /* Validating tunnel configuration to ensure no conflicts during upgrade to 1.14 */ -}}
+{{- if and .Values.routingMode .Values.tunnel -}}
+  {{- fail "routingMode and tunnel are mutually exclusive. Please set only one of them." -}}
+{{- else if and .Values.tunnelProtocol .Values.tunnel -}}
+  {{- fail "tunnelProtocol and tunnel are mutually exclusive. Please set only one of them." -}}
+{{- else if and (ne .Values.routingMode "tunnel") .Values.tunnelProtocol -}}
+  {{- fail "tunnelProtocol can only be set when routingMode is set to tunnel." -}}
+{{- else if and (eq .Values.routingMode "tunnel") (not .Values.tunnelProtocol) -}}
+  {{- fail "tunnelProtocol must be set when routingMode is set to tunnel." -}}
+{{- else if and (eq .Values.routingMode "native") .Values.tunnelProtocol  -}}
+  {{- fail "routingMode native is not compatible with tunnelProtocol." -}}
+{{- end -}}
 ---
 apiVersion: v1
 kind: ConfigMap
